@@ -3,7 +3,7 @@ project(mujoco_cmake VERSION 2.1.0)
 
 set(MJ_VER ${PROJECT_VERSION_MAJOR}${PROJECT_VERSION_MINOR}${PROJECT_VERSION_PATCH})
 
-
+include(CTest)
 include(ExternalProject)
 
 ExternalProject_Add(
@@ -55,3 +55,19 @@ install(
     DESTINATION
     bin
     )
+
+
+add_custom_command(
+    TARGET mujoco
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} ..
+  )
+
+file(GLOB xml_models "${CMAKE_CURRENT_BINARY_DIR}/mujoco/src/mujoco/model/*/*.xml")
+
+foreach(model ${xml_models})
+  add_test(
+    NAME "mujoco_compile_test_${model}"
+    COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=./mujoco/src/mujoco/lib/;$ENV{LD_LIBRARY_PATH}"
+    sh -c "./mujoco_compile ${model}")
+endforeach()    
