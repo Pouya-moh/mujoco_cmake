@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
-project(mujoco_cmake VERSION 2.1.0)
+project(mujoco_cmake VERSION 3.1.6)
 
-set(MJ_VER ${PROJECT_VERSION_MAJOR}${PROJECT_VERSION_MINOR}${PROJECT_VERSION_PATCH})
+set(MJ_VER ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 
 
 include(ExternalProject)
@@ -9,8 +9,8 @@ include(ExternalProject)
 ExternalProject_Add(
     mujoco
     PREFIX "mujoco"
-    URL https://mujoco.org/download/mujoco${MJ_VER}-linux-x86_64.tar.gz
-    URL_HASH SHA256=a436ca2f4144c38b837205635bbd60ffe1162d5b44c87df22232795978d7d012
+    URL https://github.com/google-deepmind/mujoco/releases/download/${MJ_VER}/mujoco-${MJ_VER}-linux-x86_64.tar.gz
+    URL_HASH SHA256=135494a08010bd189e655b6bd048bdfecf6305f4cd511fe56685fedbe662c6f2
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
@@ -25,6 +25,7 @@ add_custom_command(
     COMMENT "renaming compile to mujoco_compile"
 )
 
+# configure and install cmake
 configure_file(mujoco_cmakeConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/mujoco_cmakeConfig.cmake
     @ONLY)
@@ -36,22 +37,31 @@ install(
     lib/cmake/${PROJECT_NAME}
     )
 
+# install headers
 install(
     DIRECTORY
     ${MUJOCO_SRC_DIR}/include/
     DESTINATION
     include/mujoco)
 
-install(
-    DIRECTORY
-    ${MUJOCO_SRC_DIR}/bin/
-    DESTINATION
-    lib
-    FILES_MATCHING PATTERN *.so*)
-
+# install binaries (mujoco_compile + plugins)
 install(
     PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/mujoco_compile
     DESTINATION
     bin
     )
+
+install(
+    DIRECTORY
+    ${MUJOCO_SRC_DIR}/bin/mujoco_plugin
+    DESTINATION
+    bin
+    FILES_MATCHING PATTERN *.so*)
+
+
+install(
+    FILES
+    ${MUJOCO_SRC_DIR}/lib/libmujoco.so.${MJ_VER}
+    DESTINATION
+    lib)
